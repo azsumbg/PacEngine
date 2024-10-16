@@ -116,6 +116,9 @@ namespace gamedll
 
 			virtual void Move(float gear) = 0;
 			virtual void Hurt() = 0;
+			
+			void InitObstaclesPack(int maximum_size);
+			
 			void SetFlag(char which_flag);
 			void ResetFlag(char which_flag);
 			bool GetFlag(char which_flag) const;

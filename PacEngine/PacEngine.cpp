@@ -106,5 +106,9 @@ void gamedll::CREATURES::ResetFlag(char which_flag)
 {	
 	flags = flags ^ which_flag;
 }
+void gamedll::CREATURES::InitObstaclesPack(int maximum_size)
+{
+	ObstaclesPack = new ATOMPACK{ maximum_size };
+}
 
 ///////////////////////////
