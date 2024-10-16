@@ -109,15 +109,13 @@ namespace gamedll
 
 		public:
 			bool panic = false;
-			ATOMPACK* ObstaclesPack{};
 			
 			virtual ~CREATURES() {};
 			virtual void Release() = 0;
 
 			virtual void Move(float gear) = 0;
 			virtual void Hurt() = 0;
-			
-			void InitObstaclesPack(int maximum_size);
+			virtual int GetFrame() = 0;
 			
 			void SetFlag(char which_flag);
 			void ResetFlag(char which_flag);
@@ -127,5 +125,7 @@ namespace gamedll
 	typedef CREATURES* Creature;
 
 	extern PAC_API Creature Factory(creatures what, float startX, float startY);
+
+	extern PAC_API ATOMPACK& InitObstaclesPack(int maximum_size);
 }
 
