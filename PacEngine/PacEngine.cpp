@@ -109,6 +109,209 @@ void gamedll::CREATURES::ResetFlag(char which_flag)
 
 ///////////////////////////
 
+//EVILS ******************
+
+class PAC_API EVILS :public gamedll::CREATURES
+{
+	public:
+
+		EVILS(creatures what_type, float _x, float _y) :CREATURES(_x, _y) 
+		{
+			type = what_type;
+			NewDims(41.0f, 50.0f);
+
+			switch (type)
+			{
+			case creatures::blue:
+				speed = 0.9f;
+				break;
+
+			case creatures::red:
+				speed = 0.5f;
+				break;
+
+			case creatures::pink:
+				speed = 0.6f;
+				break;
+
+			case creatures::orange:
+				speed = 0.7;
+				break;
+
+			case creatures::hurt:
+				speed = 0.8f;
+				break;
+
+
+			}
+
+		};
+
+		void Release() override
+		{
+			delete this;
+		}
+
+		void Hurt() override
+		{
+			if (type != creatures::hurt)
+			{
+				previous_type = type;
+				type = creatures::hurt;
+				
+				max_frames = 10;
+				frame_delay = 3;
+
+				hurt_delay = 1000;
+				return;
+			}
+			else
+			{
+				type = previous_type;
+				previous_type = creatures::no_type;
+				
+				max_frames = 2;
+				frame_delay = 5;
+				return;
+			}
+		}
+		int GetFrame() override
+		{
+			frame_delay--;
+
+			if (frame_delay < 0)
+			{
+				if (type != creatures::hurt)frame_delay = 3;
+				else frame_delay = 5;
+				++current_frame;
+				if (current_frame > max_frames)current_frame = 0;
+			}
+			return current_frame;
+		}
+		creatures GetType() const
+		{
+			return type;
+		}
+		
+		void Move(float gear, dirs to_where, gamedll::ATOMPACK& Obstacles) override
+		{
+			float now_speed = speed + gear / 10;
+
+			for (int i = 0; i < Obstacles.size(); i++)
+			{
+				switch (dir)
+				{
+				case dirs::right:
+					{
+						float dummy_x = x + gear;
+						float dummy_ex = ex + gear;
+
+						if (!(dummy_x >= Obstacles[i].ex || dummy_ex <= Obstacles[i].x
+							|| y >= Obstacles[i].ey || ey <= Obstacles[i].y))
+						{
+							SetFlag(right_flag);
+							break;
+						}
+					}
+					break;
+
+				case dirs::left:
+				{
+					float dummy_x = x - gear;
+					float dummy_ex = ex - gear;
+
+					if (!(dummy_x >= Obstacles[i].ex || dummy_ex <= Obstacles[i].x
+						|| y >= Obstacles[i].ey || ey <= Obstacles[i].y))
+					{
+						SetFlag(left_flag);
+						break;
+					}
+				}
+					break;
+
+				case dirs::down:
+				{
+					float dummy_y = y + gear;
+					float dummy_ey = ey + gear;
+
+					if (!(x >= Obstacles[i].ex || ex <= Obstacles[i].x
+						|| dummy_y >= Obstacles[i].ey || dummy_ey <= Obstacles[i].y))
+					{
+						SetFlag(down_flag);
+						break;
+					}
+				}
+					break;
+
+				case dirs::up:
+				{
+					float dummy_y = y - gear;
+					float dummy_ey = ey - gear;
+
+					if (!(x >= Obstacles[i].ex || ex <= Obstacles[i].x
+						|| dummy_y >= Obstacles[i].ey || dummy_ey <= Obstacles[i].y))
+					{
+						SetFlag(up_flag);
+						break;
+					}
+				}
+					break;
+				}
+			}
+			switch (dir)
+			{
+			case dirs::right:
+				if (GetFlag(right_flag))break;
+				else ResetFlag(right_flag);
+				if (ex + gear >= scr_width)SetFlag(right_flag);
+				else
+				{
+					x += gear;
+					SetEdges();
+				}
+				break;
+
+			case dirs::left:
+				if (GetFlag(left_flag))break;
+				else ResetFlag(left_flag);
+				if (x - gear <= 0)SetFlag(left_flag);
+				else
+				{
+					x -= gear;
+					SetEdges();
+				}
+				break;
+
+			case dirs::down:
+				if (GetFlag(down_flag))break;
+				else ResetFlag(down_flag);
+				if (ey + gear >= ground)SetFlag(down_flag);
+				else
+				{
+					y += gear;
+					SetEdges();
+				}
+				break;
+
+			case dirs::up:
+				if (GetFlag(up_flag))break;
+				else ResetFlag(up_flag);
+				if (y - gear <= 0)SetFlag(up_flag);
+				else
+				{
+					y -= gear;
+					SetEdges();
+				}
+				break;
+			}
+		}
+};
+
+
+
+
+
+
 
 //FUNCTIONS **********************
 

@@ -10,12 +10,17 @@
 #include <vector>
 
 enum class dirs { up = 0, down = 1, left = 2, right = 4, stop = 5 };
-enum class creatures { blue = 0, red = 1, pink = 2, orange = 3, hurt = 4, pacman = 5 };
+enum class creatures { blue = 0, red = 1, pink = 2, orange = 3, hurt = 4, pacman = 5, no_type = 6 };
 
 constexpr char up_flag = 0b00000001;
 constexpr char down_flag = 0b00000010;
 constexpr char left_flag = 0b00000100;
 constexpr char right_flag = 0b00001000;
+
+constexpr float scr_width{ 800.0f };
+constexpr float scr_height{ 650.0f };
+constexpr float ground{ 600.0f };
+constexpr float sky{ 50.0f };
 
 namespace gamedll
 {
@@ -93,9 +98,10 @@ namespace gamedll
 	class PAC_API CREATURES :public ATOM
 	{
 		protected:
-			creatures type = creatures::pacman;
+			creatures type = creatures::no_type;
+			creatures previous_type = creatures::no_type;
 
-			int max_frames{};
+			int max_frames{ 1 };
 			int current_frame{};
 			int frame_delay = 5;
 
@@ -103,19 +109,22 @@ namespace gamedll
 
 			float speed = 1.0f;
 
-			CREATURES(creatures what_type, float _x, float _y) :ATOM(_x, _y) {};
+			CREATURES(float _x, float _y) :ATOM(_x, _y) {};
 
 			char flags{ 0 };
 
 		public:
 			bool panic = false;
+			dirs dir = dirs::stop;
 			
 			virtual ~CREATURES() {};
 			virtual void Release() = 0;
 
-			virtual void Move(float gear) = 0;
+			virtual void Move(float gear, dirs to_where, ATOMPACK& Obstacles) = 0;
 			virtual void Hurt() = 0;
 			virtual int GetFrame() = 0;
+			
+			virtual creatures GetType() const = 0;
 			
 			void SetFlag(char which_flag);
 			void ResetFlag(char which_flag);
