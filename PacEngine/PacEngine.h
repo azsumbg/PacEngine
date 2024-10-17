@@ -120,7 +120,7 @@ namespace gamedll
 			virtual ~CREATURES() {};
 			virtual void Release() = 0;
 
-			virtual void Move(float gear, dirs to_where, ATOMPACK& Obstacles) = 0;
+			virtual void Move(float gear, dirs to_where, dirs alternative_dir, ATOMPACK& Obstacles) = 0;
 			virtual void Hurt() = 0;
 			virtual int GetFrame() = 0;
 			

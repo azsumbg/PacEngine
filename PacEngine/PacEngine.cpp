@@ -193,7 +193,7 @@ class PAC_API EVILS :public gamedll::CREATURES
 			return type;
 		}
 		
-		void Move(float gear, dirs to_where, gamedll::ATOMPACK& Obstacles) override
+		void Move(float gear, dirs to_where, dirs alternative_dir, gamedll::ATOMPACK& Obstacles) override
 		{
 			float now_speed = speed + gear / 10;
 
@@ -261,7 +261,11 @@ class PAC_API EVILS :public gamedll::CREATURES
 			switch (dir)
 			{
 			case dirs::right:
-				if (GetFlag(right_flag))break;
+				if (GetFlag(right_flag))
+				{
+					dir = alternative_dir;
+					break;
+				}
 				else ResetFlag(right_flag);
 				if (ex + gear >= scr_width)SetFlag(right_flag);
 				else
@@ -272,7 +276,11 @@ class PAC_API EVILS :public gamedll::CREATURES
 				break;
 
 			case dirs::left:
-				if (GetFlag(left_flag))break;
+				if (GetFlag(left_flag))
+				{
+					dir = alternative_dir;
+					break;
+				}
 				else ResetFlag(left_flag);
 				if (x - gear <= 0)SetFlag(left_flag);
 				else
@@ -283,7 +291,11 @@ class PAC_API EVILS :public gamedll::CREATURES
 				break;
 
 			case dirs::down:
-				if (GetFlag(down_flag))break;
+				if (GetFlag(down_flag))
+				{
+					dir = alternative_dir;
+					break;
+				}
 				else ResetFlag(down_flag);
 				if (ey + gear >= ground)SetFlag(down_flag);
 				else
@@ -294,7 +306,11 @@ class PAC_API EVILS :public gamedll::CREATURES
 				break;
 
 			case dirs::up:
-				if (GetFlag(up_flag))break;
+				if (GetFlag(up_flag))
+				{
+					dir = alternative_dir;
+					break;
+				}
 				else ResetFlag(up_flag);
 				if (y - gear <= 0)SetFlag(up_flag);
 				else
