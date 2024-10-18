@@ -104,7 +104,24 @@ void gamedll::CREATURES::SetFlag(char which_flag)
 }
 void gamedll::CREATURES::ResetFlag(char which_flag)
 {	
-	flags = flags ^ which_flag;
+	switch (which_flag)
+	{
+	case left_flag:
+		flags &= ~(which_flag << 2);
+		break;
+
+	case right_flag:
+		flags &= ~(which_flag << 3);
+		break;
+
+	case up_flag: 
+		flags &= ~which_flag;
+		break;
+
+	case down_flag:
+		flags &= ~(which_flag << 1);
+		break;
+	}
 }
 
 ///////////////////////////
