@@ -112,16 +112,17 @@ namespace gamedll
 			CREATURES(float _x, float _y) :ATOM(_x, _y) {};
 
 			char flags{ 0 };
+			bool panic = false;
 
 		public:
-			bool panic = false;
+			
 			dirs dir = dirs::stop;
 			
 			virtual ~CREATURES() {};
 			virtual void Release() = 0;
 
 			virtual void Move(float gear, dirs to_where, dirs alternative_dir, ATOMPACK& Obstacles) = 0;
-			virtual void Hurt() = 0;
+			virtual bool Hurt() = 0;
 			virtual int GetFrame() = 0;
 			
 			virtual creatures GetType() const = 0;
