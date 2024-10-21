@@ -24,12 +24,14 @@ int gamedll::RANDENGINE::operator()(int min, int max)
 
 //ATOM *************
 
-gamedll::ATOM::ATOM(float _x, float _y, float _width = 1.0f, float _height = 1.0f)
+gamedll::ATOM::ATOM(float _x, float _y, float _width, float _height)
 {
 	x = _x;
 	y = _y;
 	width = _width;
 	height = _height;
+	ex = x + width;
+	ey = y + height;
 }
 float gamedll::ATOM::GetWidth() const
 {
@@ -96,7 +98,7 @@ gamedll::ATOM& gamedll::ATOMPACK::operator[](int position) const
 
 bool gamedll::CREATURES::GetFlag(char which_flag) const
 {
-	return(flags && which_flag);
+	return(flags & which_flag);
 }
 void gamedll::CREATURES::SetFlag(char which_flag)
 {
@@ -104,26 +106,9 @@ void gamedll::CREATURES::SetFlag(char which_flag)
 }
 void gamedll::CREATURES::ResetFlag(char which_flag)
 {	
-	char temp_flag{ flags };
-
-	switch (which_flag)
-	{
-	case left_flag:
-		flags &= ~(temp_flag << 2);
-		break;
-
-	case right_flag:
-		flags &= ~(temp_flag << 3);
-		break;
-
-	case up_flag: 
-		flags &= ~temp_flag;
-		break;
-
-	case down_flag:
-		flags &= ~(temp_flag << 1);
-		break;
-	}
+	char mask = ~which_flag;
+	
+	flags = flags & mask;
 }
 
 ///////////////////////////
@@ -137,7 +122,7 @@ class PAC_API EVILS :public gamedll::CREATURES
 		EVILS(creatures what_type, float _x, float _y) :CREATURES(_x, _y) 
 		{
 			type = what_type;
-			NewDims(41.0f, 50.0f);
+			NewDims(41.0f, 45.0f);
 
 			switch (type)
 			{
@@ -154,7 +139,7 @@ class PAC_API EVILS :public gamedll::CREATURES
 				break;
 
 			case creatures::orange:
-				speed = 0.7;
+				speed = 0.7f;
 				break;
 
 			case creatures::hurt:
@@ -337,7 +322,7 @@ class PAC_API EVILS :public gamedll::CREATURES
 					break;
 				}
 				else ResetFlag(up_flag);
-				if (y - gear <= 0)SetFlag(up_flag);
+				if (y - gear <= sky)SetFlag(up_flag);
 				else
 				{
 					y -= gear;
@@ -357,7 +342,7 @@ class PAC_API PACMAN :public gamedll::CREATURES
 		PACMAN(float _x, float _y) :CREATURES(_x, _y)
 		{
 			type = creatures::pacman;
-			NewDims(50.0f, 50.0f);
+			NewDims(45.0f, 45.0f);
 			speed = 2.0f;
 		}
 
@@ -388,7 +373,7 @@ class PAC_API PACMAN :public gamedll::CREATURES
 		void Move(float gear, dirs to_where, dirs alternative_dir, gamedll::ATOMPACK& Obstacles) override
 		{
 			float my_speed = speed + gear / 10;
-			gamedll::ATOM dummy{ x,y,50.0f,50.0f };
+			gamedll::ATOM dummy{ x,y,45.0f,45.0f };
 
 			switch (to_where)
 			{
@@ -406,13 +391,20 @@ class PAC_API PACMAN :public gamedll::CREATURES
 
 				for (int i = 0; i < Obstacles.size(); i++)
 				{
-					if (!(dummy.x >= Obstacles[i].ex || dummy.ex <= Obstacles[i].x
-						|| dummy.y >= Obstacles[i].ey || dummy.ey <= Obstacles[i].y))
+					if (!(dummy.x > Obstacles[i].ex || dummy.ex < Obstacles[i].x
+						|| dummy.y > Obstacles[i].ey || dummy.ey < Obstacles[i].y))
 					{
 						SetFlag(up_flag);
 						break;
 					}
 				}
+
+				if (!GetFlag(up_flag))
+				{
+					y -= my_speed;
+					SetEdges();
+				}
+
 				break;
 
 			case dirs::down:
@@ -429,12 +421,18 @@ class PAC_API PACMAN :public gamedll::CREATURES
 
 				for (int i = 0; i < Obstacles.size(); i++)
 				{
-					if (!(dummy.x >= Obstacles[i].ex || dummy.ex <= Obstacles[i].x
-						|| dummy.y >= Obstacles[i].ey || dummy.ey <= Obstacles[i].y))
+					if (!(dummy.x > Obstacles[i].ex || dummy.ex < Obstacles[i].x
+						|| dummy.y > Obstacles[i].ey || dummy.ey < Obstacles[i].y))
 					{
 						SetFlag(down_flag);
 						break;
 					}
+				}
+
+				if (!GetFlag(down_flag))
+				{
+					y += my_speed;
+					SetEdges();
 				}
 				break;
 
@@ -452,12 +450,18 @@ class PAC_API PACMAN :public gamedll::CREATURES
 
 				for (int i = 0; i < Obstacles.size(); i++)
 				{
-					if (!(dummy.x >= Obstacles[i].ex || dummy.ex <= Obstacles[i].x
-						|| dummy.y >= Obstacles[i].ey || dummy.ey <= Obstacles[i].y))
+					if (!(dummy.x > Obstacles[i].ex || dummy.ex < Obstacles[i].x
+						|| dummy.y > Obstacles[i].ey || dummy.ey < Obstacles[i].y))
 					{
 						SetFlag(left_flag);
 						break;
 					}
+				}
+				
+				if (!GetFlag(left_flag))
+				{
+					x -= my_speed;
+					SetEdges();
 				}
 				break;
 
@@ -475,12 +479,18 @@ class PAC_API PACMAN :public gamedll::CREATURES
 
 				for (int i = 0; i < Obstacles.size(); i++)
 				{
-					if (!(dummy.x >= Obstacles[i].ex || dummy.ex <= Obstacles[i].x
-						|| dummy.y >= Obstacles[i].ey || dummy.ey <= Obstacles[i].y))
+					if (!(dummy.x > Obstacles[i].ex || dummy.ex < Obstacles[i].x
+						|| dummy.y > Obstacles[i].ey || dummy.ey < Obstacles[i].y))
 					{
 						SetFlag(right_flag);
 						break;
 					}
+				}
+
+				if (!GetFlag(right_flag))
+				{
+					x += my_speed;
+					SetEdges();
 				}
 				break;
 			}
